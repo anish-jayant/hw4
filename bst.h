@@ -5,6 +5,8 @@
 #include <exception>
 #include <cstdlib>
 #include <utility>
+#include <stack> 
+#include <queue>
 
 /**
  * A templated class for a Node in a search tree.
@@ -219,7 +221,7 @@ public:
         bool operator==(const iterator& rhs) const;
         bool operator!=(const iterator& rhs) const;
 
-        iterator& operator++();
+        iterator& operator++(); //&
 
     protected:
         friend class BinarySearchTree<Key, Value>;
@@ -234,10 +236,11 @@ public:
     Value& operator[](const Key& key);
     Value const & operator[](const Key& key) const;
 
+
 protected:
     // Mandatory helper functions
-    Node<Key, Value>* internalFind(const Key& k) const; // TODO
-    Node<Key, Value> *getSmallestNode() const;  // TODO
+		Node<Key, Value>* internalFind(const Key& k) const; // TODO
+		Node<Key, Value> *getSmallestNode() const;  // TODO
     static Node<Key, Value>* predecessor(Node<Key, Value>* current); // TODO
     // Note:  static means these functions don't have a "this" pointer
     //        and instead just use the input argument.
@@ -267,6 +270,7 @@ template<class Key, class Value>
 BinarySearchTree<Key, Value>::iterator::iterator(Node<Key,Value> *ptr)
 {
     // TODO
+		current_ = ptr;
 }
 
 /**
@@ -276,7 +280,7 @@ template<class Key, class Value>
 BinarySearchTree<Key, Value>::iterator::iterator() 
 {
     // TODO
-
+		current_ = NULL;
 }
 
 /**
@@ -309,6 +313,12 @@ BinarySearchTree<Key, Value>::iterator::operator==(
     const BinarySearchTree<Key, Value>::iterator& rhs) const
 {
     // TODO
+		return current_ == rhs.current_;
+		
+		/*(current_->getValue() == rhs.current_->getValue()) && 
+		(current_->getParent() == rhs.current_->getParent()) && 
+		(current_->getRight() == rhs.current_ ->getRight()) &&
+		(current_->getLeft() == rhs.current_->getLeft());*/
 }
 
 /**
@@ -321,7 +331,7 @@ BinarySearchTree<Key, Value>::iterator::operator!=(
     const BinarySearchTree<Key, Value>::iterator& rhs) const
 {
     // TODO
-
+		return !(this->operator==(rhs));
 }
 
 
@@ -333,10 +343,34 @@ typename BinarySearchTree<Key, Value>::iterator&
 BinarySearchTree<Key, Value>::iterator::operator++()
 {
     // TODO
+		Node<Key, Value>* temp = current_;
+		if (temp->getRight() != NULL) //successor is the leftmost child -- min successor
+		{
+			//node = cur
+			temp = temp->getRight();
+			while (temp->getLeft() != NULL)
+			{
+				//node = node -> left
+				temp = temp->getLeft();
+			}
+			current_ = temp;
+		}
+		else 
+		{
+			// else, some parent is the successor
+			Node<Key, Value>* parent = temp->getParent();
+			while (parent != NULL && temp == parent->getRight())
+			{
+				temp = parent;
+				parent = parent->getParent();
+			}
+			current_ = parent;
+		}
+
+		return *this;
+
 
 }
-
-
 /*
 -------------------------------------------------------------
 End implementations for the BinarySearchTree::iterator class.
@@ -356,12 +390,14 @@ template<class Key, class Value>
 BinarySearchTree<Key, Value>::BinarySearchTree() 
 {
     // TODO
+		root_ = NULL;
 }
 
 template<typename Key, typename Value>
 BinarySearchTree<Key, Value>::~BinarySearchTree()
 {
     // TODO
+		clear();
 
 }
 
@@ -445,6 +481,43 @@ template<class Key, class Value>
 void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &keyValuePair)
 {
     // TODO
+		Node<Key, Value>* cur = root_;
+		Node<Key, Value>* new_node = new Node<Key, Value>(keyValuePair.first, keyValuePair.second, cur);
+
+		if (cur == NULL)
+		{
+			root_ = new_node;
+			return;
+		}
+
+		while (cur != NULL)
+		{
+			if (keyValuePair.first < cur->getKey())
+			{
+				if (cur->getLeft()  == NULL) //there is an open leaf position
+				{
+					cur->setLeft(new_node);
+					new_node->setParent(cur);
+					return;
+				}
+				else cur = cur->getLeft(); //compare with node in place
+			}
+			else if (keyValuePair.first > cur->getKey())
+			{
+				if (cur->getRight() == NULL) //there is an open leaf position
+				{
+					cur->setRight(new_node);
+					new_node->setParent(cur);
+					return;
+				}
+				else cur = cur->getRight(); //compare with node in place
+			}
+			else //duplicate key found -- replace with updated value
+			{ 
+				cur->setValue( keyValuePair.second);
+				return;
+			}
+		}
 }
 
 
@@ -457,6 +530,7 @@ template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::remove(const Key& key)
 {
     // TODO
+
 }
 
 
@@ -466,6 +540,16 @@ Node<Key, Value>*
 BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
 {
     // TODO
+		Node<Key, Value>* cur = internalFind(current->getKey());
+		if (cur == NULL) return NULL; //no current in tree :(
+		cur = cur->getLeft();
+		//find predecesor from cur by finding rightmost ancestor
+		while (cur->getRight())
+		{
+			cur = cur->getRight();
+		}
+
+		return cur;
 }
 
 
@@ -477,6 +561,22 @@ template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::clear()
 {
     // TODO
+		if (root_ == NULL) return; //no work to be done 
+		
+		// delete each node, layer by layer
+		std::queue<Node<Key, Value>* > q;
+		q.push(root_);
+		while (!q.empty())
+		{
+			int level_size = q.size();
+			for (int i = 0; i < level_size; i++)
+			{
+				Node<Key, Value>* cur = q.front(); q.pop();
+				if (cur->getLeft()) q.push(cur->getLeft());
+				if (cur->getRight()) q.push(cur->getRight());
+				delete cur;
+			}
+		}
 }
 
 
@@ -488,6 +588,13 @@ Node<Key, Value>*
 BinarySearchTree<Key, Value>::getSmallestNode() const
 {
     // TODO
+		//assuming BST maintains its property, we just want the leftmost node
+		Node<Key, Value>* cur = root_;
+		while (cur->getLeft())
+		{
+			cur = cur->getLeft();
+		}
+		return cur;
 }
 
 /**
@@ -499,6 +606,27 @@ template<typename Key, typename Value>
 Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) const
 {
     // TODO
+		Node<Key, Value>* cur = root_;
+		while (cur != NULL)
+		{
+			if (key == cur->getKey()) 
+			{
+				std::cout << "found" << std::endl;
+				return cur;
+			}
+			else if ( key < cur->getKey()) 
+			{
+				cur = cur->getLeft();
+				continue;
+			}
+			else
+			{
+				cur = cur->getRight();
+				continue;
+			}
+		}	
+		return NULL;
+
 }
 
 /**

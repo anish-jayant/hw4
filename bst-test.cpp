@@ -12,6 +12,25 @@ int main(int argc, char *argv[])
     BinarySearchTree<char,int> bt;
     bt.insert(std::make_pair('a',1));
     bt.insert(std::make_pair('b',2));
+
+//    const char x = 'b';
+
+//    Node<char, int>* val = bt.internalFind(x);
+//    pair<char, int> y = val->getItem();
+//    cout << y.first << " " << y.second << endl;
+
+
+    auto it = bt.begin();  // TODO();
+    auto jt = bt.end();
+    int c = 0;
+    while (it != jt)
+    {
+        cout << c++ << ": " << it->first << " " << it->second << endl;
+        ++it;
+        //if (it == bt.end()) cout << "end" << endl;
+    }
+
+
     
     cout << "Binary Search Tree contents:" << endl;
     for(BinarySearchTree<char,int>::iterator it = bt.begin(); it != bt.end(); ++it) {
