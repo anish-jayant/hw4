@@ -235,7 +235,7 @@ public:
     iterator find(const Key& key) const;
     Value& operator[](const Key& key);
     Value const & operator[](const Key& key) const;
-
+		void printTree();
 
 protected:
     // Mandatory helper functions
@@ -250,6 +250,7 @@ protected:
     virtual void nodeSwap( Node<Key,Value>* n1, Node<Key,Value>* n2) ;
 
     // Add helper functions here
+		Node<Key, Value>* getRoot() const;
 
 
 protected:
@@ -530,7 +531,79 @@ template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::remove(const Key& key)
 {
     // TODO
+		if (root_ == NULL)
+		{
+//			std::cout << "(Personal Warning): Null root_ in remove" << std::endl;
+			return;
+		}
 
+		Node<Key, Value> *temp = internalFind(key);
+		bool watchout = (root_ == temp); 
+		if (temp->getLeft() && temp->getRight())
+		{
+//			std::cout << "Deleting node with 2 children" << std::endl;
+			Node<Key, Value>* pred = predecessor(temp);
+			nodeSwap(pred, temp);
+			if (watchout) root_ = pred;
+			//now we must delete temp
+			if (temp == temp->getParent()->getLeft()) temp->getParent()->setLeft(NULL); 
+			else temp->getParent()->setRight(NULL);
+			delete temp;
+		}
+		else if (temp->getLeft() || temp->getRight())
+		{
+//			std::cout << "Deleting node with 1 children" << std::endl;
+			if (temp->getLeft()) //left tree is available
+			{
+				if (watchout) //we are replacing root_
+				{
+					root_ = temp->getLeft();
+					delete temp;
+					root_->setParent(NULL);
+				}
+				else
+				{
+					Node<Key, Value>* parent = temp->getParent();
+					parent->setLeft(temp->getLeft());
+					temp->getLeft()->setParent(parent);
+					delete temp;
+				}
+			}
+			else //right tree available
+			{
+				if (watchout) //we are replacing root_
+				{
+					root_ = temp->getRight();
+					delete temp;
+					root_->setParent(NULL);
+				}
+				else
+				{
+					Node<Key, Value>* parent = temp->getParent();
+					parent->setRight(temp->getRight());
+					temp->getRight()->setParent(parent);
+					delete temp;
+				}
+			}
+		}
+
+
+
+		else
+		{
+			if (watchout) //delete the orphan
+			{
+				delete temp;
+				root_ = NULL;
+			}
+			else
+			{
+				if(temp == temp->getParent()->getLeft()) temp->getParent()->setLeft(NULL);
+				else temp->getParent()->setRight(NULL);
+				delete temp;
+			}
+			std::cout << "Deleting leaf node" << std::endl;
+		}
 }
 
 
@@ -540,16 +613,22 @@ Node<Key, Value>*
 BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
 {
     // TODO
-		Node<Key, Value>* cur = internalFind(current->getKey());
-		if (cur == NULL) return NULL; //no current in tree :(
-		cur = cur->getLeft();
+		if (current == NULL) return NULL; //no current in tree :(
+		current = current->getLeft();
 		//find predecesor from cur by finding rightmost ancestor
-		while (cur->getRight())
+		while (current->getRight())
 		{
-			cur = cur->getRight();
+			current = current->getRight();
 		}
 
-		return cur;
+		return current;
+}
+
+template<class Key, class Value>
+Node<Key, Value>* 
+BinarySearchTree<Key, Value>::getRoot() const
+{
+	return root_;
 }
 
 
@@ -611,7 +690,7 @@ Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) con
 		{
 			if (key == cur->getKey()) 
 			{
-				std::cout << "found" << std::endl;
+//				std::cout << "found" << std::endl;
 				return cur;
 			}
 			else if ( key < cur->getKey()) 
@@ -636,6 +715,29 @@ template<typename Key, typename Value>
 bool BinarySearchTree<Key, Value>::isBalanced() const
 {
     // TODO
+		//let's see if we can do this iteratively!
+		if (root_ == NULL) return true;
+
+		int first_leaf = -1;
+		int level = 0;
+		std::queue<Node<Key, Value> *> q;
+		q.push(root_);
+		while (!q.empty())
+		{
+			int size = q.size();
+			for (int i = 0; i < size; i++)
+			{
+				Node<Key, Value>* cur = q.front(); q.pop();
+				if (!cur->getLeft() && !cur->getRight() && level > first_leaf)
+				{
+					first_leaf = level;
+				}
+				if (cur->getLeft()) q.push(cur->getLeft());
+				if (cur->getRight()) q.push(cur->getRight());
+			}
+			level++;
+		}
+		return (level - first_leaf < 2);
 }
 
 
@@ -737,6 +839,12 @@ void BinarySearchTree<Key, Value>::nodeSwap( Node<Key,Value>* n1, Node<Key,Value
 
 // include print function (in its own file because it's fairly long)
 #include "print_bst.h"
+
+template<typename Key, typename Value>
+void BinarySearchTree<Key, Value>::printTree()
+{
+	this->printRoot(this->root_);
+}
 
 /*
 ---------------------------------------------------

@@ -10,8 +10,14 @@ int main(int argc, char *argv[])
 {
     // Binary Search Tree tests
     BinarySearchTree<char,int> bt;
-    bt.insert(std::make_pair('a',1));
-    bt.insert(std::make_pair('b',2));
+    bt.insert(std::make_pair('b',1));
+    bt.insert(std::make_pair('c',2));
+    bt.insert(std::make_pair('a',3));
+    bt.insert(std::make_pair('d',4));
+    bt.insert(std::make_pair('f',5));
+    bt.insert(std::make_pair('g',6));
+    bt.insert(std::make_pair('e',7));
+
 
 //    const char x = 'b';
 
@@ -42,9 +48,16 @@ int main(int argc, char *argv[])
     else {
         cout << "Did not find b" << endl;
     }
-    cout << "Erasing b" << endl;
-    bt.remove('b');
 
+		bt.printTree();
+		bt.remove('b');
+		cout << "removed 'b' " << endl;
+		bt.printTree();
+
+		bt.remove('f');
+		cout << "removed 'f' " << endl;
+		bt.printTree();
+/*
     // AVL Tree Tests
     AVLTree<char,int> at;
     at.insert(std::make_pair('a',1));
@@ -62,6 +75,6 @@ int main(int argc, char *argv[])
     }
     cout << "Erasing b" << endl;
     at.remove('b');
-
+*/
     return 0;
 }
