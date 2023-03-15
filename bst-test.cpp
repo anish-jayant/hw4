@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <vector>
 #include "bst.h"
 #include "avlbst.h"
 
@@ -9,54 +10,47 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     // Binary Search Tree tests
-    BinarySearchTree<char,int> bt;
-    bt.insert(std::make_pair('b',1));
-    bt.insert(std::make_pair('c',2));
-    bt.insert(std::make_pair('a',3));
-    bt.insert(std::make_pair('d',4));
-    bt.insert(std::make_pair('f',5));
-    bt.insert(std::make_pair('g',6));
-    bt.insert(std::make_pair('e',7));
+    vector<int> fuark = { -94,
+                -52,
+                77,
+                124,
+                36,
+                64,
+                54,
+                -73,
+                52,
+                51,
+                8,
+                -81,
+                -43,
+                129,
+                9,
+                117,
+                -38,
+                21,
+                131,
+                -90,
+                34,
+                5,
+                -131,
+                45,
+                -4,
+                130,
+                13,
+                10,
+                72,
+                -134, 
+                95};
 
 
-//    const char x = 'b';
 
-//    Node<char, int>* val = bt.internalFind(x);
-//    pair<char, int> y = val->getItem();
-//    cout << y.first << " " << y.second << endl;
-
-
-    auto it = bt.begin();  // TODO();
-    auto jt = bt.end();
-    int c = 0;
-    while (it != jt)
+    BinarySearchTree<int,int> bt;
+    for (size_t i = 0; i < fuark.size(); ++i)
     {
-        cout << c++ << ": " << it->first << " " << it->second << endl;
-        ++it;
-        //if (it == bt.end()) cout << "end" << endl;
+        bt.insert(std::make_pair(fuark[i], fuark[i]));
     }
 
-
-    
-    cout << "Binary Search Tree contents:" << endl;
-    for(BinarySearchTree<char,int>::iterator it = bt.begin(); it != bt.end(); ++it) {
-        cout << it->first << " " << it->second << endl;
-    }
-    if(bt.find('b') != bt.end()) {
-        cout << "Found b" << endl;
-    }
-    else {
-        cout << "Did not find b" << endl;
-    }
-
-		bt.printTree();
-		bt.remove('b');
-		cout << "removed 'b' " << endl;
-		bt.printTree();
-
-		bt.remove('f');
-		cout << "removed 'f' " << endl;
-		bt.printTree();
+    bt.printTree();
 /*
     // AVL Tree Tests
     AVLTree<char,int> at;
