@@ -183,8 +183,6 @@ void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
 					cur->setRight(new_node);
 					new_node->setParent(cur);
 					cur->updateBalance(1);
-					std::cout << "found open leaf" << std::endl;
-					std::cout << "Balance reported: " << (cur->getBalance()) << std::endl;
 					if (cur->getBalance() == 1) { insertFix(cur, new_node); }
 					return;
 				}
@@ -204,11 +202,8 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* c
 {
 	if (p == NULL || p->getParent() == NULL) return;
 	AVLNode<Key, Value>* gp = p->getParent();
-	std::cout << p->getValue() << std::endl;
-	std::cout << c->getValue() <<std::endl;
 	if (p == gp->getLeft()) //parent is left child of grandparent
 	{
-		std::cout << "left child of gparent" << std::endl;
 		gp->updateBalance(-1);
 		if (gp->getBalance() == 0) return;
 		else if (gp->getBalance() == -1) insertFix(gp, p);
@@ -227,7 +222,6 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* c
 				rotateLeft(p); rotateRight(gp);
 				if (c->getBalance() == -1)
 				{
-					std::cout << "Not 0" << std::endl;
 					p->setBalance(0); gp->setBalance(1); c->setBalance(0);
 				}
 				else if (c->getBalance() == 0)
@@ -236,7 +230,6 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* c
 				}
 				else if (c->getBalance() == 1)
 				{
-					std::cout << "Not 0" << std::endl;
 					p->setBalance(-1); gp->setBalance(0); c->setBalance(0);
 				}
 				else std::cout << "Should never reach here (zigzag) " << std::endl;
@@ -250,13 +243,12 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* c
 	{
 		gp->updateBalance(1);
 		if (gp->getBalance() == 0) return;
-		else if (gp->getBalance() == 1) { insertFix(gp, p); std::cout << "were we here? " << std::endl; }
+		else if (gp->getBalance() == 1) { insertFix(gp, p); }
 		else if (gp->getBalance() == 2)
 		{
 			//Zig-zig pattern
 			if ((p == gp->getLeft() && c == p->getLeft()) || (p == gp->getRight() && c == p->getRight()))
 			{
-				std::cout << "here" << std::endl;
 				rotateLeft(gp);
 				gp->setBalance(0);
 				p->setBalance(0);
@@ -264,26 +256,19 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* c
 			}
 			else //Zig-zag pattern
 			{
-				std::cout << "here we are!" << std::endl;
 				rotateRight(p); rotateLeft(gp); //we ahve an issue with rotate right
-				std::cout << "after augmenting" << std::endl;
 				this->printTree();
 				if (c->getBalance() == -1)
 				{
-					std::cout << "Not 0" << std::endl;
-
-					p->setBalance(0); gp->setBalance(-1); c->setBalance(0);
+					p->setBalance(1); gp->setBalance(0); c->setBalance(0);
 				}
 				else if (c->getBalance() == 0)
 				{
-					
 					p->setBalance(0); gp->setBalance(0); c->setBalance(0);
 				}
 				else if (c->getBalance() == 1)
 				{
-					std::cout << "Not 0" << std::endl;
-
-					p->setBalance(1); gp->setBalance(0); c->setBalance(0);
+					p->setBalance(0); gp->setBalance(-1); c->setBalance(0);
 				}
 				else { std::cout << "Should never reach this case (zigzag2)" << std::endl; }
 				return;

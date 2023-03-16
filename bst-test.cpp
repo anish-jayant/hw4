@@ -12,6 +12,8 @@ int main(int argc, char *argv[])
     // Binary Search Tree tests
 
     // Binary Search Tree tests
+		vector<int> hi = {0, -5, -10};
+
     vector<int> fuark = { -94,
                 -52,
                 77,
@@ -55,9 +57,5 @@ int main(int argc, char *argv[])
     cout << "\nAVLTree contents:" << endl;
     at.printTree();
 
-		cout << "This one breaks? " << endl;
-		at.insert(std::make_pair(fuark[5], fuark[5]));
-		
-		at.printTree();
     return 0;
 }
