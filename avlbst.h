@@ -24,9 +24,9 @@ public:
     virtual ~AVLNode();
 
     // Getter/setter for the node's height.
-    int getBalance () const;
-    void setBalance (int balance); //int8_t
-    void updateBalance(int diff);
+    int8_t getBalance () const;
+    void setBalance (int8_t balance); //int8_t
+    void updateBalance(int8_t diff);
 
     // Getters for parent, left, and right. These need to be redefined since they
     // return pointers to AVLNodes - not plain Nodes. See the Node class in bst.h
@@ -36,7 +36,7 @@ public:
     virtual AVLNode<Key, Value>* getRight() const override;
 
 protected:
-    int balance_;    // effectively a signed char
+    int8_t balance_;    // effectively a signed char
 };
 
 /*
@@ -68,7 +68,7 @@ AVLNode<Key, Value>::~AVLNode()
 * A getter for the balance of a AVLNode.
 */
 template<class Key, class Value>
-int AVLNode<Key, Value>::getBalance() const
+int8_t AVLNode<Key, Value>::getBalance() const
 {
     return balance_;
 }
@@ -77,7 +77,7 @@ int AVLNode<Key, Value>::getBalance() const
 * A setter for the balance of a AVLNode.
 */
 template<class Key, class Value>
-void AVLNode<Key, Value>::setBalance(int balance)
+void AVLNode<Key, Value>::setBalance(int8_t balance)
 {
     balance_ = balance;
 }
@@ -86,7 +86,7 @@ void AVLNode<Key, Value>::setBalance(int balance)
 * Adds diff to the balance of a AVLNode.
 */
 template<class Key, class Value>
-void AVLNode<Key, Value>::updateBalance(int diff)
+void AVLNode<Key, Value>::updateBalance(int8_t diff)
 {
     balance_ += diff;
 }
@@ -138,6 +138,7 @@ protected:
 
     // Add helper functions here
 		virtual void insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* c);
+		virtual void removeFix( AVLNode<Key,Value>* p, int diff);
 		virtual void rotateRight(AVLNode<Key,Value>* node);
 		virtual void rotateLeft(AVLNode<Key,Value>* node);
 
@@ -285,6 +286,8 @@ void AVLTree<Key, Value>::rotateRight(AVLNode<Key, Value>* node)
 {
 	if (node == NULL) return;
 
+	//theoretically, running into this catch is impossible! 
+	//the theoreticians worst fear: real life :)
 	if (node->getLeft() == NULL) 
 	{
 		std::cout << "special issue, left node null" << std::endl;
@@ -323,6 +326,8 @@ void AVLTree<Key, Value>::rotateLeft(AVLNode<Key, Value>* node)
 {
 	if (node == NULL) return;
 
+	//theoretically, running into this catch is impossible! 
+	//the theoreticians worst fear: real life :)
 	if (node->getRight() == NULL) 
 	{
 		std::cout << "special issue, right node null" << std::endl;
@@ -364,6 +369,192 @@ template<class Key, class Value>
 void AVLTree<Key, Value>:: remove(const Key& key)
 {
     // TODO
+		/*
+		AVLNode<Key, Value>* n = static_cast<AVLNode<Key, Value>*>(this->internalFind(key));
+		if (!n) return; //value not in tree
+
+		//if node has 2 children, we swap with its predecessor
+		if (n->getLeft() && n->getRight())
+		{
+			bool watchout = (static_cast<AVLNode<Key, Value>*>(this->getRoot()) == n); //are we deleting root?
+			AVLNode<Key, Value>* pred = static_cast<AVLNode<Key, Value>*> (this->predecessor(n));
+			nodeSwap(n, pred);
+			if (watchout) this->setRoot(pred);
+		}
+		//post-swapping, n has at most 1 child!!!
+		AVLNode<Key, Value>* p = n->getParent();
+		int diff;
+		if (p != NULL)
+		{
+			diff = (n == p->getLeft()) ? 1 : -1;
+			p->updateBalance(diff);
+		}
+
+		AVLNode<Key, Value>* temp = n;
+		bool watchout = (static_cast<AVLNode<Key, Value>*>(this->getRoot()) == n);		//now we have to delete n
+		if (temp->getLeft() || temp->getRight())
+		{
+			if (temp->getLeft()) //left tree is available
+			{
+				if (watchout) //we are replacing root_
+				{
+					this->setRoot( temp->getLeft() );
+					delete temp;
+					this->getRoot()->setParent(NULL);
+				}
+				else
+				{
+					AVLNode<Key, Value>* parent = static_cast<AVLNode<Key, Value>*> (temp->getParent());
+					if (temp == parent->getLeft()) parent->setLeft(temp->getLeft());
+					else parent->setRight(temp->getLeft());
+					temp->getLeft()->setParent(parent);
+					delete temp;
+				}
+			}
+			else //right tree available
+			{
+				if (watchout) //we are replacing root_
+				{
+					this->setRoot( temp->getRight());
+					delete temp;
+					this->getRoot()->setParent(NULL);
+				}
+				else
+				{
+
+					AVLNode<Key, Value>* parent = static_cast<AVLNode<Key, Value>*> (temp->getParent());
+					if (temp == parent->getLeft()) parent->setLeft(temp->getRight());
+					else parent->setRight(temp->getRight());
+					temp->getRight()->setParent(parent);
+					delete temp;
+				}
+			}
+		}
+		else
+		{
+			if (watchout) //delete the orphan
+			{
+				delete temp;
+				this->setRoot(NULL);
+			}
+			else
+			{
+				if(temp == temp->getParent()->getLeft()) temp->getParent()->setLeft(NULL);
+				else temp->getParent()->setRight(NULL);
+				delete temp;
+			}
+		}
+
+		//removeFix(p, diff);
+*/
+
+}
+
+template<class Key, class Value>
+void AVLTree<Key, Value>::removeFix( AVLNode<Key,Value>* n, int diff)
+{
+	if (n == NULL) return;
+	AVLNode<Key, Value>* p = n->getParent();
+	int ndiff;
+	if (p) ndiff = (n == p->getLeft()) ? 1 : -1;
+	if (diff == -1)
+	{
+		//case 1: 
+		if (n->getBalance() + diff == -2)
+		{
+			AVLNode<Key, Value>* c = n->getLeft(); //the taller of the two children
+			if (c->getBalance() == -1)
+			{
+				rotateRight(n);
+				n->setBalance(0); c->setBalance(0);
+				removeFix(p, ndiff);
+				//return;
+			}
+			else if (c->getBalance() == 0)
+			{
+				rotateRight(n);
+				n->setBalance(-1); c->setBalance(1);
+				return;
+			}
+			else if (c->getBalance() == 1)
+			{
+				AVLNode<Key, Value>* g = c->getRight();
+				int bg = g->getBalance();
+				rotateLeft(c); rotateRight(c);
+				if (bg == 1) { n->setBalance(0); c->setBalance(1); g->setBalance(0); }
+				else if (bg == 0) { n->setBalance(0); c->setBalance(0); g->setBalance(0); }
+				else if (bg == -1) { n->setBalance(1); c->setBalance(0); g->setBalance(0); }
+				else std::cout << "impossible removefix0" << std::endl;
+			}
+			else std::cout << "impossible removefix" << std::endl;
+
+
+		}
+		else if (n->getBalance() + diff == -1)
+		{
+			n->setBalance(-1);
+			return;
+		}
+		else if (n->getBalance() + diff == 0)
+		{
+			n->setBalance(0);
+			removeFix(p, ndiff);
+		}
+		else std::cout << "impossible to reach" << std::endl;
+
+	}
+	else if (diff == 1)
+	{
+		//case 1: 
+		if (n->getBalance() + diff == 2)
+		{
+			AVLNode<Key, Value>* c = n->getRight(); //the taller of the two children
+			if (c->getBalance() == 1)
+			{
+				rotateLeft(n);
+				n->setBalance(0); c->setBalance(0);
+				removeFix(p, ndiff);
+				//return;
+			}
+			else if (c->getBalance() == 0)
+			{
+				rotateRight(n);
+				n->setBalance(1); c->setBalance(-1);
+				return;
+			}
+			else if (c->getBalance() == -1)
+			{
+				AVLNode<Key, Value>* g = c->getLeft();
+				int bg = g->getBalance();
+				rotateRight(c); rotateLeft(c);
+				if (bg == -1) { n->setBalance(0); c->setBalance(-1); g->setBalance(0); }
+				else if (bg == 0) { n->setBalance(0); c->setBalance(0); g->setBalance(0); }
+				else if (bg == 1) { n->setBalance(-1); c->setBalance(0); g->setBalance(0); }
+				else std::cout << "impossible removefix0" << std::endl;
+			}
+			else std::cout << "impossible removefix" << std::endl;
+
+
+		}
+		else if (n->getBalance() + diff == -1)
+		{
+			n->setBalance(-1);
+			return;
+		}
+		else if (n->getBalance() + diff == 0)
+		{
+			n->setBalance(0);
+			removeFix(p, ndiff);
+		}
+		else std::cout << "impossible to reach" << std::endl;
+
+
+
+	}
+	else std::cout << "remove fix, impossible to reach" << std::endl;
+
+	
+	return;
 }
 
 template<class Key, class Value>

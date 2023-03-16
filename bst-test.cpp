@@ -51,11 +51,21 @@ int main(int argc, char *argv[])
     AVLTree<int,int> at;
     for (size_t i = 0; i < fuark.size(); ++i)
     {
-        at.insert(std::make_pair(fuark[i], fuark[i]));
+        at.insert(std::make_pair(hi[i], hi[i]));
     }
 
-    cout << "\nAVLTree contents:" << endl;
-    at.printTree();
+		cout << "removing 36" << endl;
+		at.remove(36);
+		at.printTree();
+
+		cout << "removing 8" << endl;
+		at.remove(8);
+		at.printTree();
+
+
+
+
+
 
     return 0;
 }
