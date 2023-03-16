@@ -548,9 +548,8 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
 //			std::cout << "(Personal Warning): Null root_ in remove" << std::endl;
 			return;
 		}
-
 		Node<Key, Value> *temp = internalFind(key);
-		std::cout << "Key found: " << temp->getKey() << " " << temp->getValue() << std::endl;
+//		std::cout << "Key found: " << temp->getKey() << " " << temp->getValue() << std::endl;
 		if (temp == NULL) { return; }
 		bool watchout = (root_ == temp); 
 		while (temp->getLeft() && temp->getRight())

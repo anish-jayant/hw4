@@ -369,84 +369,84 @@ template<class Key, class Value>
 void AVLTree<Key, Value>:: remove(const Key& key)
 {
     // TODO
-		/*
-		AVLNode<Key, Value>* n = static_cast<AVLNode<Key, Value>*>(this->internalFind(key));
-		if (!n) return; //value not in tree
 
-		//if node has 2 children, we swap with its predecessor
-		if (n->getLeft() && n->getRight())
+		if (this->getRoot() == NULL)
 		{
-			bool watchout = (static_cast<AVLNode<Key, Value>*>(this->getRoot()) == n); //are we deleting root?
-			AVLNode<Key, Value>* pred = static_cast<AVLNode<Key, Value>*> (this->predecessor(n));
-			nodeSwap(n, pred);
-			if (watchout) this->setRoot(pred);
+//			std::cout << "(Personal Warning): Null root_ in remove" << std::endl;
+			return;
 		}
-		//post-swapping, n has at most 1 child!!!
-		AVLNode<Key, Value>* p = n->getParent();
-		int diff;
+
+		AVLNode<Key, Value> *temp = static_cast<AVLNode<Key, Value>*> (this->internalFind(key));
+		if (temp == NULL) { return; }
+				std::cout << "Key found: " << temp->getKey() << " " << temp->getValue() << std::endl;
+		bool watchout = (this->getRoot() == temp); 
+		while (temp->getLeft() && temp->getRight())
+		{
+			std::cout << "Deleting node with 2 children" << std::endl;
+			AVLNode<Key, Value>* pred = static_cast<AVLNode<Key, Value>*> (this->BinarySearchTree<Key, Value>::predecessor(temp));
+			std::cout << pred->getValue() << " " << "value " << std::endl;
+			nodeSwap(pred, temp);
+			std::cout << pred->getValue() << "predecessor value after swap " << std::endl;
+			if (watchout) { this->setRoot( pred); }
+			std::cout << std::boolalpha << watchout << std::endl;
+			this->printTree();
+			watchout = (this->getRoot() == temp);
+
+		}
+		std::cout << "hello" << std::endl;
+
+		//temp is in its final position before deletion
+		AVLNode<Key, Value>* p = temp->getParent();
+//		std::cout << "parent of node to be deleted; " << p->getValue() << std::endl;
+		int diff = 0;
 		if (p != NULL)
 		{
-			diff = (n == p->getLeft()) ? 1 : -1;
-			p->updateBalance(diff);
+			diff = (temp == p->getLeft()) ? 1 : -1;
+//			p->updateBalance(diff);
 		}
+		if (diff == 0) std::cout << "warning: diff did not update!!" << std::endl;
+		std::cout << "Diff: " << diff << std::endl;
 
-		AVLNode<Key, Value>* temp = n;
-		bool watchout = (static_cast<AVLNode<Key, Value>*>(this->getRoot()) == n);		//now we have to delete n
-		if (temp->getLeft() || temp->getRight())
+		//delete temp
+		if (temp->getRight() || temp->getLeft())
 		{
-			if (temp->getLeft()) //left tree is available
+			std::cout << "single child remove" << std::endl;
+			bool watchout = (this->getRoot() == temp);
+			if (temp->getRight())
 			{
-				if (watchout) //we are replacing root_
-				{
-					this->setRoot( temp->getLeft() );
-					delete temp;
-					this->getRoot()->setParent(NULL);
-				}
-				else
-				{
-					AVLNode<Key, Value>* parent = static_cast<AVLNode<Key, Value>*> (temp->getParent());
-					if (temp == parent->getLeft()) parent->setLeft(temp->getLeft());
-					else parent->setRight(temp->getLeft());
-					temp->getLeft()->setParent(parent);
-					delete temp;
-				}
+				if (watchout) { this->setRoot(temp->getRight()); temp->getRight()->setParent(NULL); }
+				else {
+				if (temp == p->getLeft()) p->setLeft(temp->getRight());
+				else p->setRight(temp->getRight()); }
+				delete temp;
 			}
-			else //right tree available
+			else
 			{
-				if (watchout) //we are replacing root_
-				{
-					this->setRoot( temp->getRight());
-					delete temp;
-					this->getRoot()->setParent(NULL);
-				}
-				else
-				{
-
-					AVLNode<Key, Value>* parent = static_cast<AVLNode<Key, Value>*> (temp->getParent());
-					if (temp == parent->getLeft()) parent->setLeft(temp->getRight());
-					else parent->setRight(temp->getRight());
-					temp->getRight()->setParent(parent);
-					delete temp;
-				}
+				if (watchout) { this->setRoot(temp->getLeft()); temp->getLeft()->setParent(NULL); }
+				else { 
+				if (temp == p->getLeft()) p->setLeft(temp->getLeft());
+				else p->setRight(temp->getLeft()); }
+				delete temp;
 			}
 		}
 		else
 		{
-			if (watchout) //delete the orphan
+			std::cout << "removing leaf node" << std::endl;
+			if (this->getRoot() == temp)
 			{
-				delete temp;
+
 				this->setRoot(NULL);
+				delete temp;
 			}
 			else
 			{
-				if(temp == temp->getParent()->getLeft()) temp->getParent()->setLeft(NULL);
-				else temp->getParent()->setRight(NULL);
+				if (temp == p->getLeft()) p->setLeft(NULL);
+				else p->setRight(NULL);
 				delete temp;
 			}
 		}
 
-		//removeFix(p, diff);
-*/
+		removeFix(p, diff);
 
 }
 
