@@ -251,6 +251,7 @@ protected:
 
     // Add helper functions here
 		Node<Key, Value>* getRoot() const;
+		void setRoot(Node<Key,Value>* x);
 		int getHeight(Node<Key,Value>* cur) const;
 		bool isBalancedHelper(Node<Key, Value>* cur) const;
 
@@ -402,6 +403,12 @@ BinarySearchTree<Key, Value>::~BinarySearchTree()
     // TODO
 		clear();
 
+}
+
+template<class Key, class Value>
+void BinarySearchTree<Key, Value>::setRoot(Node<Key,Value>* x)
+{
+	root_ = x;
 }
 
 /**
