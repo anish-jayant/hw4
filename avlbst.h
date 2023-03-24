@@ -235,11 +235,11 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* c
 				{
 					p->setBalance(-1); gp->setBalance(0); c->setBalance(0);
 				}
-				else std::cout << "Should never reach here (zigzag) " << std::endl;
+				//else std::cout << "Should never reach here (zigzag) " << std::endl;
 				return;
 			}
 		}
-		else { std::cout << "Should never reach this case (Left)" << std::endl; }
+		//else { std::cout << "Should never reach this case (Left)" << std::endl; }
 
 	}
 	else //parent is right child of gradparent
@@ -273,11 +273,11 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* c
 				{
 					p->setBalance(0); gp->setBalance(-1); c->setBalance(0);
 				}
-				else { std::cout << "Should never reach this case (zigzag2)" << std::endl; }
+				//else { std::cout << "Should never reach this case (zigzag2)" << std::endl; }
 				return;
 			}
 		}
-		else { std::cout << "Should never reach this case (Right)" << std::endl; }
+		//else { std::cout << "Should never reach this case (Right)" << std::endl; }
 
 	}
 	return;
@@ -292,7 +292,7 @@ void AVLTree<Key, Value>::rotateRight(AVLNode<Key, Value>* node)
 	//the theoreticians worst fear: real life :)
 	if (node->getLeft() == NULL) 
 	{
-		std::cout << "special issue, left node null" << std::endl;
+		//std::cout << "special issue, left node null" << std::endl;
 		return;
 	}
 
@@ -332,7 +332,7 @@ void AVLTree<Key, Value>::rotateLeft(AVLNode<Key, Value>* node)
 	//the theoreticians worst fear: real life :)
 	if (node->getRight() == NULL) 
 	{
-		std::cout << "special issue, right node null" << std::endl;
+		//std::cout << "special issue, right node null" << std::endl;
 		return;
 	}
 
@@ -476,7 +476,7 @@ void AVLTree<Key, Value>::removeFix(AVLNode<Key, Value>* n, int diff)
                 //else std::cout << "impossible removefix0" << std::endl;
 								removeFix(p, ndiff);
             }
-            else std::cout << "reachable" << std::endl;
+            //else std::cout << "reachable" << std::endl;
 
 
         }
@@ -490,7 +490,7 @@ void AVLTree<Key, Value>::removeFix(AVLNode<Key, Value>* n, int diff)
             n->setBalance(0);
             removeFix(p, ndiff);
         }
-        else std::cout << "impossible to reach" << std::endl;
+        //else std::cout << "impossible to reach" << std::endl;
 
     }
     else if (diff == 1)
@@ -519,10 +519,10 @@ void AVLTree<Key, Value>::removeFix(AVLNode<Key, Value>* n, int diff)
                 if (g->getBalance() == -1) { n->setBalance(0); c->setBalance(1); g->setBalance(0); }
                 else if (g->getBalance() == 0) { n->setBalance(0); c->setBalance(0); g->setBalance(0); }
                 else if (g->getBalance() == 1) { n->setBalance(-1); c->setBalance(0); g->setBalance(0); }
-                else std::cout << "impossible removefix0" << std::endl;
+                //else std::cout << "impossible removefix0" << std::endl;
 								removeFix(p, ndiff);
             }
-            else std::cout << "reachable" << std::endl;
+            //else std::cout << "reachable" << std::endl;
 
         }
         else if (n->getBalance() + diff == 1)
@@ -535,12 +535,12 @@ void AVLTree<Key, Value>::removeFix(AVLNode<Key, Value>* n, int diff)
             n->setBalance(0);
             removeFix(p, ndiff);
         }
-        else std::cout << "impossible to reach" << std::endl;
+        //else std::cout << "impossible to reach" << std::endl;
 
 
 
     }
-    else std::cout << "remove fix, impossible to reach" << std::endl;
+    //else std::cout << "remove fix, impossible to reach" << std::endl;
 }
 
 template<class Key, class Value>
