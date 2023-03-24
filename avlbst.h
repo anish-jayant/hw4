@@ -192,6 +192,8 @@ void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
 			else //duplicate key found -- replace with updated value
 			{ 
 				cur->setValue( new_item.second );
+				//shouldn't have made a new key in the first place lol
+				delete new_node;
 				return;
 			}
 		}
@@ -365,196 +367,180 @@ void AVLTree<Key, Value>::rotateLeft(AVLNode<Key, Value>* node)
  * Recall: The writeup specifies that if a node has 2 children you
  * should swap with the predecessor and then remove.
  */
+
 template<class Key, class Value>
-void AVLTree<Key, Value>:: remove(const Key& key)
+void AVLTree<Key, Value>::remove(const Key& key)
 {
     // TODO
+    if (this->getRoot() == NULL)
+    {
+        //			std::cout << "(Personal Warning): Null root_ in remove" << std::endl;
+        return;
+    }
 
-		if (this->getRoot() == NULL)
+    AVLNode<Key, Value>* temp = static_cast<AVLNode<Key, Value>*> (this->internalFind(key));
+    if (temp == NULL) return;
+    //				std::cout << "Key found: " << temp->getKey() << " " << temp->getValue() << std::endl;
+    bool watchout = (this->getRoot() == temp);
+    //this is overkill - we only need to swap once at most!
+
+    //enough to make sure that we are deleting either a 1-child node or a leaf!
+    if (temp->getLeft() && temp->getRight())
+    {
+        AVLNode<Key, Value>* pred = static_cast<AVLNode<Key, Value>*> (BinarySearchTree<Key, Value>::predecessor(temp));
+        nodeSwap(temp, pred);
+        if (watchout) this->setRoot(pred);
+    }
+
+
+    //now it is safe to delete temp!
+    AVLNode<Key, Value>* p = temp->getParent();
+    int diff = 0;
+    if (p != NULL)
+    {
+        diff = (temp == p->getLeft()) ? 1 : -1;
+    }
+
+    //delete temp
+		watchout = (this->getRoot() == temp);
+		if (temp->getRight())
 		{
-//			std::cout << "(Personal Warning): Null root_ in remove" << std::endl;
-			return;
-		}
-
-		AVLNode<Key, Value> *temp = static_cast<AVLNode<Key, Value>*> (this->internalFind(key));
-		if (temp == NULL) { return; }
-				std::cout << "Key found: " << temp->getKey() << " " << temp->getValue() << std::endl;
-		bool watchout = (this->getRoot() == temp); 
-		while (temp->getLeft() && temp->getRight())
-		{
-			std::cout << "Deleting node with 2 children" << std::endl;
-			AVLNode<Key, Value>* pred = static_cast<AVLNode<Key, Value>*> (this->BinarySearchTree<Key, Value>::predecessor(temp));
-			std::cout << pred->getValue() << " " << "value " << std::endl;
-			nodeSwap(pred, temp);
-			std::cout << pred->getValue() << "predecessor value after swap " << std::endl;
-			if (watchout) { this->setRoot( pred); }
-			std::cout << std::boolalpha << watchout << std::endl;
-			this->printTree();
-			watchout = (this->getRoot() == temp);
-
-		}
-		std::cout << "hello" << std::endl;
-
-		//temp is in its final position before deletion
-		AVLNode<Key, Value>* p = temp->getParent();
-//		std::cout << "parent of node to be deleted; " << p->getValue() << std::endl;
-		int diff = 0;
-		if (p != NULL)
-		{
-			diff = (temp == p->getLeft()) ? 1 : -1;
-//			p->updateBalance(diff);
-		}
-		if (diff == 0) std::cout << "warning: diff did not update!!" << std::endl;
-		std::cout << "Diff: " << diff << std::endl;
-
-		//delete temp
-		if (temp->getRight() || temp->getLeft())
-		{
-			std::cout << "single child remove" << std::endl;
-			bool watchout = (this->getRoot() == temp);
-			if (temp->getRight())
-			{
 				if (watchout) { this->setRoot(temp->getRight()); temp->getRight()->setParent(NULL); }
 				else {
-				if (temp == p->getLeft()) p->setLeft(temp->getRight());
-				else p->setRight(temp->getRight()); }
+						if (temp == p->getLeft()) { p->setLeft(temp->getRight()); temp->getRight()->setParent(p); }
+						else { p->setRight(temp->getRight()); temp->getRight()->setParent(p); }
+				}
 				delete temp;
-			}
-			else
-			{
-				if (watchout) { this->setRoot(temp->getLeft()); temp->getLeft()->setParent(NULL); }
-				else { 
-				if (temp == p->getLeft()) p->setLeft(temp->getLeft());
-				else p->setRight(temp->getLeft()); }
-				delete temp;
-			}
 		}
-		else
+		else if (temp->getLeft())
 		{
-			std::cout << "removing leaf node" << std::endl;
-			if (this->getRoot() == temp)
-			{
-
-				this->setRoot(NULL);
+				if (watchout) { this->setRoot(temp->getLeft()); temp->getLeft()->setParent(NULL); }
+				else {
+						if (temp == p->getLeft()) { p->setLeft(temp->getLeft()); temp->getLeft()->setParent(p); }
+						else { p->setRight(temp->getLeft()); temp->getLeft()->setParent(p); }
+				}
 				delete temp;
-			}
-			else
-			{
-				if (temp == p->getLeft()) p->setLeft(NULL);
-				else p->setRight(NULL);
-				delete temp;
-			}
 		}
+    else
+    {
+        if (this->getRoot() == temp)
+        {
 
-		removeFix(p, diff);
+            this->setRoot(NULL);
+            delete temp;
+        }
+        else
+        {
+            if (temp == p->getLeft()) p->setLeft(NULL);
+            else p->setRight(NULL);
+            delete temp;
+        }
+    }
 
+    removeFix(p, diff);
 }
 
+
 template<class Key, class Value>
-void AVLTree<Key, Value>::removeFix( AVLNode<Key,Value>* n, int diff)
+void AVLTree<Key, Value>::removeFix(AVLNode<Key, Value>* n, int diff)
 {
-	if (n == NULL) return;
-	AVLNode<Key, Value>* p = n->getParent();
-	int ndiff;
-	if (p) ndiff = (n == p->getLeft()) ? 1 : -1;
-	if (diff == -1)
-	{
-		//case 1: 
-		if (n->getBalance() + diff == -2)
-		{
-			AVLNode<Key, Value>* c = n->getLeft(); //the taller of the two children
-			if (c->getBalance() == -1)
-			{
-				rotateRight(n);
-				n->setBalance(0); c->setBalance(0);
-				removeFix(p, ndiff);
-				//return;
-			}
-			else if (c->getBalance() == 0)
-			{
-				rotateRight(n);
-				n->setBalance(-1); c->setBalance(1);
-				return;
-			}
-			else if (c->getBalance() == 1)
-			{
-				AVLNode<Key, Value>* g = c->getRight();
-				int bg = g->getBalance();
-				rotateLeft(c); rotateRight(c);
-				if (bg == 1) { n->setBalance(0); c->setBalance(1); g->setBalance(0); }
-				else if (bg == 0) { n->setBalance(0); c->setBalance(0); g->setBalance(0); }
-				else if (bg == -1) { n->setBalance(1); c->setBalance(0); g->setBalance(0); }
-				else std::cout << "impossible removefix0" << std::endl;
-			}
-			else std::cout << "impossible removefix" << std::endl;
+    if (n == nullptr) return;
+    AVLNode<Key, Value>* p = n->getParent();
+    int ndiff;
+    if (p) ndiff = (n == p->getLeft() ? 1 : -1);
+    if (diff == -1)
+    {
+        //case 1: 
+        if (n->getBalance() + diff == -2)
+        {
+            AVLNode<Key, Value>* c = n->getLeft(); //the taller of the two children
+            if (c->getBalance() == -1)
+            {
+                rotateRight(n);
+                n->setBalance(0); c->setBalance(0);
+                removeFix(p, ndiff);
+            }
+            else if (c->getBalance() == 0)
+            {
+                rotateRight(n);
+                n->setBalance(-1); c->setBalance(1);
+                return;
+            }
+            else if (c->getBalance() == 1)
+            {
+                AVLNode<Key, Value>* g = c->getRight();
+                rotateLeft(c); rotateRight(n);
+                if (g->getBalance() == 1) { n->setBalance(0); c->setBalance(-1); g->setBalance(0); }
+                else if (g->getBalance() == 0) { n->setBalance(0); c->setBalance(0); g->setBalance(0); }
+                else if (g->getBalance() == -1) { n->setBalance(1); c->setBalance(0); g->setBalance(0); }
+                //else std::cout << "impossible removefix0" << std::endl;
+								removeFix(p, ndiff);
+            }
+            else std::cout << "reachable" << std::endl;
 
 
-		}
-		else if (n->getBalance() + diff == -1)
-		{
-			n->setBalance(-1);
-			return;
-		}
-		else if (n->getBalance() + diff == 0)
-		{
-			n->setBalance(0);
-			removeFix(p, ndiff);
-		}
-		else std::cout << "impossible to reach" << std::endl;
+        }
+        else if (n->getBalance() + diff == -1)
+        {
+            n->setBalance(-1);
+            return;
+        }
+        else if (n->getBalance() + diff == 0)
+        {
+            n->setBalance(0);
+            removeFix(p, ndiff);
+        }
+        else std::cout << "impossible to reach" << std::endl;
 
-	}
-	else if (diff == 1)
-	{
-		//case 1: 
-		if (n->getBalance() + diff == 2)
-		{
-			AVLNode<Key, Value>* c = n->getRight(); //the taller of the two children
-			if (c->getBalance() == 1)
-			{
-				rotateLeft(n);
-				n->setBalance(0); c->setBalance(0);
-				removeFix(p, ndiff);
-				//return;
-			}
-			else if (c->getBalance() == 0)
-			{
-				rotateRight(n);
-				n->setBalance(1); c->setBalance(-1);
-				return;
-			}
-			else if (c->getBalance() == -1)
-			{
-				AVLNode<Key, Value>* g = c->getLeft();
-				int bg = g->getBalance();
-				rotateRight(c); rotateLeft(c);
-				if (bg == -1) { n->setBalance(0); c->setBalance(-1); g->setBalance(0); }
-				else if (bg == 0) { n->setBalance(0); c->setBalance(0); g->setBalance(0); }
-				else if (bg == 1) { n->setBalance(-1); c->setBalance(0); g->setBalance(0); }
-				else std::cout << "impossible removefix0" << std::endl;
-			}
-			else std::cout << "impossible removefix" << std::endl;
+    }
+    else if (diff == 1)
+    {
+        //case 1: 
+        if (n->getBalance() + diff == 2)
+        {
+            AVLNode<Key, Value>* c = n->getRight(); //the taller of the two children
+            if (c->getBalance() == 1)
+            {
+                rotateLeft(n);
+                n->setBalance(0); c->setBalance(0);
+                removeFix(p, ndiff);
+                //return;
+            }
+            else if (c->getBalance() == 0)
+            {
+                rotateLeft(n);
+                n->setBalance(1); c->setBalance(-1);
+                return;
+            }
+            else if (c->getBalance() == -1)
+            {
+                AVLNode<Key, Value>* g = c->getLeft();
+                rotateRight(c); rotateLeft(n);
+                if (g->getBalance() == -1) { n->setBalance(0); c->setBalance(1); g->setBalance(0); }
+                else if (g->getBalance() == 0) { n->setBalance(0); c->setBalance(0); g->setBalance(0); }
+                else if (g->getBalance() == 1) { n->setBalance(-1); c->setBalance(0); g->setBalance(0); }
+                else std::cout << "impossible removefix0" << std::endl;
+								removeFix(p, ndiff);
+            }
+            else std::cout << "reachable" << std::endl;
 
-
-		}
-		else if (n->getBalance() + diff == -1)
-		{
-			n->setBalance(-1);
-			return;
-		}
-		else if (n->getBalance() + diff == 0)
-		{
-			n->setBalance(0);
-			removeFix(p, ndiff);
-		}
-		else std::cout << "impossible to reach" << std::endl;
+        }
+        else if (n->getBalance() + diff == 1)
+        {
+            n->setBalance(1);
+            return;
+        }
+        else if (n->getBalance() + diff == 0)
+        {
+            n->setBalance(0);
+            removeFix(p, ndiff);
+        }
+        else std::cout << "impossible to reach" << std::endl;
 
 
 
-	}
-	else std::cout << "remove fix, impossible to reach" << std::endl;
-
-	
-	return;
+    }
+    else std::cout << "remove fix, impossible to reach" << std::endl;
 }
 
 template<class Key, class Value>
