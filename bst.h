@@ -528,6 +528,7 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
 			else //duplicate key found -- replace with updated value
 			{ 
 				cur->setValue( keyValuePair.second);
+				delete new_node;
 				return;
 			}
 		}
